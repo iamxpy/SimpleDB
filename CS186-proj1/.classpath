@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" output="bin/src" path="src/java"/>
+	<classpathentry kind="src" output="bin/test" path="test"/>
+	<classpathentry kind="lib" path="lib/jline-0.9.94.jar"/>
+	<classpathentry kind="lib" path="lib/junit-4.5.jar"/>
+	<classpathentry kind="lib" path="lib/zql.jar"/>
+	<classpathentry kind="lib" path="lib/mina-core-2.0.4.jar"/>
+	<classpathentry kind="lib" path="lib/mina-filter-compression-2.0.4.jar"/>
+	<classpathentry kind="lib" path="lib/jzlib-1.0.7.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.6.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin/src"/>
+</classpath>
