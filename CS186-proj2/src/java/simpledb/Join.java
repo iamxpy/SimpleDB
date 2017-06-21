@@ -101,6 +101,7 @@ public class Join extends Operator {
         // some code goes here
         child1.rewind();
         child2.rewind();
+        left = null;
     }
 
     /**
@@ -127,11 +128,11 @@ public class Join extends Operator {
         // TODO: 17-5-29 改善嵌套循环
 
         int length1 = child1.getTupleDesc().numFields();
-        while (child1.hasNext()) {
+        while (child1.hasNext() || child2.hasNext()) {
             if (left == null || !child2.hasNext()) {
                 // left == null代表还没初始化过，因此要调用next给它赋值
                 // !child2.hasNext() 代表child2表已经遍历完一遍了，这时候需要重新调用next给left赋值
-                // 并将child2的重新初始化，对新的left重新遍历一遍child2
+                // 并将child2重新初始化，对新的left重新遍历一遍child2
                 // 也就是说，如果child2还没遍历完，left还不能更新，这是因为有可能child1的一行对应child2的几行
                 left = child1.next();
                 child2.rewind();
