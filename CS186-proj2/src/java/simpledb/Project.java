@@ -8,6 +8,12 @@ import java.util.NoSuchElementException;
  */
 public class Project extends Operator {
 
+    // TODO: 17-7-15 delete this
+    @Override
+    public String getName() {
+        return "<Project on " + child.getName()+ ">";
+    }
+
     private static final long serialVersionUID = 1L;
     private DbIterator child;
     private TupleDesc td;

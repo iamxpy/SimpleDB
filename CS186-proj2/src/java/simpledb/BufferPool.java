@@ -37,6 +37,12 @@ public class BufferPool {
     //当前的缓存页
     private LruCache<PageId,Page> lruPagesPool;
 
+    // TODO: 17-7-15 delete this
+    private long allTime=0;
+
+    // TODO: 17-7-15 delete this
+    private long missTime=0;
+
     /**
      * Creates a BufferPool that caches up to numPages pages.
      *
@@ -66,12 +72,17 @@ public class BufferPool {
     public Page getPage(TransactionId tid, PageId pid, Permissions perm)
             throws TransactionAbortedException, DbException {
         // some code goes here
+        // TODO: 17-7-15  delete this
+        if(++allTime%5000==0) System.out.println("this process calls getPage() "
+                +allTime+" times, and miss "+missTime+" times, "+100*missTime/allTime+"% miss");
         // TODO: 17-5-26 怎么用tid和perm？？？？
         HeapPage page = (HeapPage) lruPagesPool.get(pid);
         if (page != null) {//直接命中
             return page;
         }
         //未命中，访问磁盘并将其缓存
+        // TODO: 17-7-15 delete this
+        missTime++;
         HeapFile table = (HeapFile) Database.getCatalog().getDbFile(pid.getTableId());
         HeapPage newPage = (HeapPage) table.readPage(pid);
         Page removedPage = lruPagesPool.put(pid, newPage);

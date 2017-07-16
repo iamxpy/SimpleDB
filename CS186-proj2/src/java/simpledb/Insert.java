@@ -7,6 +7,11 @@ import java.io.IOException;
  * constructor
  */
 public class Insert extends Operator {
+    // TODO: 17-7-15 delete this
+    @Override
+    public String getName() {
+        return "<Insert into "+child.getName()+ ">";
+    }
 
     private static final long serialVersionUID = 1L;
 

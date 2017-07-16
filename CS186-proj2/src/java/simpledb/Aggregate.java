@@ -12,6 +12,11 @@ import java.util.NoSuchElementException;
  * @see Aggregator
  */
 public class Aggregate extends Operator {
+    // TODO: 17-7-15 delete this
+    @Override
+    public String getName() {
+        return "<Aggregate-"+aggreOp+" on " + child.getName()+">";
+    }
 
     private static final long serialVersionUID = 1L;
 
@@ -48,8 +53,6 @@ public class Aggregate extends Operator {
      * @param gbIndex The column over which we are grouping the result, or -1 if
      *                there is no grouping
      * @param aggreOp The aggregation operator to use
-     *
-     * @see Aggregator#setNewTD(TupleDesc) 这个方法是我自己加入在原接口的，见javadoc的解释
      */
     public Aggregate(DbIterator child, int agIndex, int gbIndex, Aggregator.Op aggreOp) {
         // some code goes here
@@ -62,9 +65,9 @@ public class Aggregate extends Operator {
         //根据进行聚合的列的类型来判断aggreator的类型
         gbFieldType = gbIndex == Aggregator.NO_GROUPING ? null : child_td.getFieldType(gbIndex);
         if (aggreType == Type.INT_TYPE) {
-            aggregator = new IntegerAggregator(gbIndex, gbFieldType, agIndex, aggreOp,child_td);
+            aggregator = new IntegerAggregator(gbIndex, gbFieldType, agIndex, aggreOp, getTupleDesc());
         } else if (aggreType == Type.STRING_TYPE) {
-            aggregator = new StringAggregator(gbIndex, gbFieldType, agIndex, aggreOp,child_td);
+            aggregator = new StringAggregator(gbIndex, gbFieldType, agIndex, aggreOp, getTupleDesc());
         }
     }
 
@@ -127,7 +130,7 @@ public class Aggregate extends Operator {
         while (child.hasNext()) {
             aggregator.mergeTupleIntoGroup(child.next());
         }
-        aggregateIter=aggregator.iterator();
+        aggregateIter = aggregator.iterator();
         aggregateIter.open();
     }
 
@@ -173,7 +176,7 @@ public class Aggregate extends Operator {
         String aggName = child_td.getFieldName(agIndex);
         if (gbIndex == Aggregator.NO_GROUPING) {
             types = new Type[]{Type.INT_TYPE};
-            //names = new String[]{aggName+"("+aggreOp.toString()+")"};这样不是按照注视来的吗，结果通不过测试
+            // TODO: 17-7-6  names = new String[]{aggName+"("+aggreOp.toString()+")"};这样不是按照注视来的吗，结果通不过测试
             names = new String[]{aggName};
         } else {
             types = new Type[]{gbFieldType, Type.INT_TYPE};

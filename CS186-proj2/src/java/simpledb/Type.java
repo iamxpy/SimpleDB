@@ -24,6 +24,10 @@ public enum Type implements Serializable {
                 throw new ParseException("couldn't parse", 0);
             }
         }
+        @Override
+        public String toString(){
+            return "INT";
+        }
 
     }, STRING_TYPE() {
         @Override
@@ -50,6 +54,10 @@ public enum Type implements Serializable {
             } catch (IOException e) {
                 throw new ParseException("couldn't parse", 0);
             }
+        }
+        @Override
+        public String toString(){
+            return "STRING";
         }
     };
 

@@ -14,6 +14,11 @@ import java.util.*;
  * 按照我的理解，DbIterator既是一个操作的抽象，也是这个操作的结果集的抽象，因此类似一个表，有tupleDesc(行描述)
  */
 public interface DbIterator extends Serializable {
+
+    // TODO: 17-7-15 delete this
+    default String getName(){
+        return "<DbIter>";
+    }
     /**
      * Opens the iterator. This must be called before any of the other methods.
      *

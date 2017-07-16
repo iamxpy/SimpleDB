@@ -6,6 +6,11 @@ import java.util.*;
  * Filter is an operator that implements a relational select.
  */
 public class Filter extends Operator {
+    // TODO: 17-7-15 delete this
+    @Override
+    public String getName() {
+        return "<Filter-" + predicate.toString() + " on " + child.getName() + ">";
+    }
 
     private static final long serialVersionUID = 1L;
 

@@ -8,6 +8,11 @@ import java.util.*;
  * disk).
  */
 public class SeqScan implements DbIterator {
+    // TODO: 17-7-15 delete this
+    @Override
+    public String getName() {
+        return "<Scan on " + tableAlias+ ">";
+    }
 
     private static final long serialVersionUID = 1L;
 

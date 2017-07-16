@@ -5,6 +5,11 @@ package simpledb;
  * them from the table they belong to.
  */
 public class Delete extends Operator {
+    // TODO: 17-7-15 delete this
+    @Override
+    public String getName() {
+        return "<Delete " + child.getName()+ ">";
+    }
 
     private static final long serialVersionUID = 1L;
 

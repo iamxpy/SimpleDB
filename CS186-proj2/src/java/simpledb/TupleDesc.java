@@ -276,11 +276,11 @@ public class TupleDesc implements Serializable {
     public String toString() {
         // some code goes here
         StringBuffer result = new StringBuffer();
-        result.append("Fields: ");
+        result.append("< ");
         for (TDItem tdItem : tdAr) {
-            result.append(tdItem.toString() + ", ");
+            result.append(tdItem.toString() + " ");
         }
-        result.append(numFields + " Fields in all");
+        result.append(">");
         return result.toString();
     }
 
