@@ -15,7 +15,7 @@ import java.util.*;
  */
 public interface DbIterator extends Serializable {
 
-    // TODO: 17-7-15 delete this
+    // TODO: 17-7-15 觉得碍眼可以删了，可以帮助了解sql执行过程的每一步，即通过调用getName可以知道每个Operator的child类型
     default String getName(){
         return "<DbIter>";
     }

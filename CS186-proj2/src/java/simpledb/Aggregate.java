@@ -12,7 +12,7 @@ import java.util.NoSuchElementException;
  * @see Aggregator
  */
 public class Aggregate extends Operator {
-    // TODO: 17-7-15 delete this
+    // TODO: 17-7-15 觉得碍眼可以删了，可以帮助了解sql执行过程的每一步
     @Override
     public String getName() {
         return "<Aggregate-"+aggreOp+" on " + child.getName()+">";

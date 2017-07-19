@@ -165,7 +165,6 @@ public class IntegerAggregator implements Aggregator {
      */
     public DbIterator iterator() {
         // some code goes here
-        //return new AggregatorIterator(this);
         ArrayList<Tuple> tuples = new ArrayList<>();
         for (Map.Entry<Field, Integer> g2a : gval2agval.entrySet()) {
             Tuple t = new Tuple(td);//该tuple不必setRecordId，因为RecordId对进行操作后的tuple没有意义

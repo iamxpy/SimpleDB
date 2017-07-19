@@ -7,7 +7,7 @@ import java.io.IOException;
  * constructor
  */
 public class Insert extends Operator {
-    // TODO: 17-7-15 delete this
+    // TODO: 17-7-15 觉得碍眼可以删了，可以帮助了解sql执行过程的每一步
     @Override
     public String getName() {
         return "<Insert into "+child.getName()+ ">";

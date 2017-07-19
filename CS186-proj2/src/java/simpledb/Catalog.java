@@ -114,6 +114,7 @@ public class Catalog {
         return id2file.get(tableid).getTupleDesc();
     }
 
+
     /**
      * Returns the DbFile that can be used to read the contents of the
      * specified table.

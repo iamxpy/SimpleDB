@@ -5,7 +5,7 @@ package simpledb;
  * them from the table they belong to.
  */
 public class Delete extends Operator {
-    // TODO: 17-7-15 delete this
+    // TODO: 17-7-15 觉得碍眼可以删了，可以帮助了解sql执行过程的每一步
     @Override
     public String getName() {
         return "<Delete " + child.getName()+ ">";

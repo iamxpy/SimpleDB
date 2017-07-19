@@ -1,13 +1,13 @@
 package simpledb;
 
 import Zql.*;
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-
 import jline.ArgumentCompletor;
 import jline.ConsoleReader;
 import jline.SimpleCompletor;
+
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 public class Parser {
     static boolean explain = false;

@@ -8,7 +8,7 @@ import java.util.*;
  * disk).
  */
 public class SeqScan implements DbIterator {
-    // TODO: 17-7-15 delete this
+    // TODO: 17-7-15 觉得碍眼可以删了，可以帮助了解sql执行过程的每一步
     @Override
     public String getName() {
         return "<Scan on " + tableAlias+ ">";
@@ -23,6 +23,8 @@ public class SeqScan implements DbIterator {
     private String tableAlias;
 
     private DbFileIterator tupleIterator;
+
+    private TupleDesc td;
 
     /**
      * Creates a sequential scan over the specified table as a part of the
@@ -98,6 +100,9 @@ public class SeqScan implements DbIterator {
      */
     public TupleDesc getTupleDesc() {
         // some code goes here
+        if (td != null) {
+            return td;
+        }
         TupleDesc desc = Database.getCatalog().getTupleDesc(tableid);
         int fieldNum = desc.numFields();
         Type[] types = new Type[fieldNum];
@@ -121,7 +126,21 @@ public class SeqScan implements DbIterator {
     public Tuple next() throws NoSuchElementException,
             TransactionAbortedException, DbException {
         // some code goes here
-        return tupleIterator.next();
+        Tuple old=tupleIterator.next();
+        return transTd(old);
+    }
+
+    /**
+     * 将tuple的tupleDesc加上Alias
+     * @param old
+     * @return
+     */
+    private Tuple transTd(Tuple old) {
+        Tuple result = new Tuple(getTupleDesc());
+        for(int i=0;i<old.getTupleDesc().numFields();i++) {
+            result.setField(i, old.getField(i));
+        }
+        return result;
     }
 
     public void close() {
