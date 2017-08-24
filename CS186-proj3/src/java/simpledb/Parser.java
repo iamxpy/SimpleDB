@@ -1,13 +1,13 @@
 package simpledb;
 
 import Zql.*;
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-
 import jline.ArgumentCompletor;
 import jline.ConsoleReader;
 import jline.SimpleCompletor;
+
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 public class Parser {
     static boolean explain = false;
@@ -276,7 +276,6 @@ public class Parser {
     public Query handleQueryStatement(ZQuery s, TransactionId tId)
             throws TransactionAbortedException, DbException, IOException,
             simpledb.ParsingException, Zql.ParseException {
-        // and run it
         Query query = new Query(tId);
 
         LogicalPlan lp = parseQueryLogicalPlan(tId, s);
@@ -303,17 +302,10 @@ public class Parser {
                 m = c.getMethod(
                         "printQueryPlanTree", DbIterator.class, System.out.getClass());
                 m.invoke(c.newInstance(), physicalPlan,System.out);
-            } catch (ClassNotFoundException e) {
-            } catch (SecurityException e) {
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            } catch (InstantiationException e) {
+
+
+            } catch (ClassNotFoundException | SecurityException e) {
+            } catch (NoSuchMethodException | IllegalArgumentException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
                 e.printStackTrace();
             }
         }

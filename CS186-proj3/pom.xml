@@ -2,59 +2,59 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-<groupId>groupId</groupId>
-<artifactId>CS186-proj2</artifactId>
-<version>1.0-SNAPSHOT</version>
+    <groupId>groupId</groupId>
+    <artifactId>CS186-proj3</artifactId>
+    <version>1.0-SNAPSHOT</version>
 
-<dependencies>
-    <!-- 将simpledb的依赖加入这里-->
-    <!-- https://mvnrepository.com/artifact/jline/jline -->
-    <dependency>
-        <groupId>jline</groupId>
-        <artifactId>jline</artifactId>
-        <version>0.9.94</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/junit/junit -->
-    <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.5</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/com.jcraft/jzlib -->
-    <dependency>
-        <groupId>com.jcraft</groupId>
-        <artifactId>jzlib</artifactId>
-        <version>1.0.7</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/org.apache.mina/mina-core -->
-    <dependency>
-        <groupId>org.apache.mina</groupId>
-        <artifactId>mina-core</artifactId>
-        <version>2.0.4</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/org.apache.mina/mina-filter-compression -->
-    <dependency>
-        <groupId>org.apache.mina</groupId>
-        <artifactId>mina-filter-compression</artifactId>
-        <version>2.0.4</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
-    <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>1.6.1</version>
-    </dependency>
-    <!--这个依赖是自己安装到本地仓库的,到课程主页下载project 1 的文件后得到zql.jar, 执行如下格式的命令-->
-    <!--mvn install:install-file -DgroupId=com.taobao -DartifactId=alidayu -Dversion=1.0 -Dpackaging=jar -Dfile=jar包完整路径-->
-    <dependency>
-        <groupId>org.berkeley.simpledb</groupId>
-        <artifactId>zql</artifactId>
-        <version>1.0</version>
-    </dependency>
+    <dependencies>
+        <!-- 将simpledb的依赖加入这里-->
+        <!-- https://mvnrepository.com/artifact/jline/jline -->
+        <dependency>
+            <groupId>jline</groupId>
+            <artifactId>jline</artifactId>
+            <version>0.9.94</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/junit/junit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.5</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.jcraft/jzlib -->
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jzlib</artifactId>
+            <version>1.0.7</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.mina/mina-core -->
+        <dependency>
+            <groupId>org.apache.mina</groupId>
+            <artifactId>mina-core</artifactId>
+            <version>2.0.4</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.mina/mina-filter-compression -->
+        <dependency>
+            <groupId>org.apache.mina</groupId>
+            <artifactId>mina-filter-compression</artifactId>
+            <version>2.0.4</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+        <!--这个依赖是自己安装到本地仓库的,到课程主页下载project 1 的文件后得到zql.jar, 执行如下格式的命令-->
+        <!--mvn install:install-file -DgroupId=com.taobao -DartifactId=alidayu -Dversion=1.0 -Dpackaging=jar -Dfile=jar包完整路径-->
+        <dependency>
+            <groupId>org.berkeley.simpledb</groupId>
+            <artifactId>zql</artifactId>
+            <version>1.0</version>
+        </dependency>
 
-</dependencies>
+    </dependencies>
     <build>
         <plugins>
             <plugin>
@@ -68,7 +68,5 @@
             </plugin>
         </plugins>
     </build>
-
-
 
 </project>

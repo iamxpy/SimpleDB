@@ -1,6 +1,7 @@
 package simpledb;
 
 /** A class to represent a fixed-width histogram over a single String-based field.
+ * 目前理解selectivity的定义：predicate应用在table后的结果集的tuple数量占原table的tuple数量的比例
  */
 public class StringHistogram {
     IntHistogram hist;

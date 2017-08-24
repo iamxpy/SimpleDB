@@ -42,12 +42,12 @@ public class HashEquiJoin extends Operator {
     
     public String getJoinField1Name()
     {
-	return this.child1.getTupleDesc().getFieldName(this.pred.getField1());
+	return this.child1.getTupleDesc().getFieldName(this.pred.getIndex1());
     }
 
     public String getJoinField2Name()
     {
-	return this.child2.getTupleDesc().getFieldName(this.pred.getField2());
+	return this.child2.getTupleDesc().getFieldName(this.pred.getIndex2());
     }
     
     HashMap<Object, ArrayList<Tuple>> map = new HashMap<Object, ArrayList<Tuple>>();
@@ -58,10 +58,10 @@ public class HashEquiJoin extends Operator {
         map.clear();
         while (child1.hasNext()) {
             t1 = child1.next();
-            ArrayList<Tuple> list = map.get(t1.getField(pred.getField1()));
+            ArrayList<Tuple> list = map.get(t1.getField(pred.getIndex1()));
             if (list == null) {
                 list = new ArrayList<Tuple>();
-                map.put(t1.getField(pred.getField1()), list);
+                map.put(t1.getField(pred.getIndex1()), list);
             }
             list.add(t1);
             if (cnt++ == MAP_SIZE)
@@ -142,7 +142,7 @@ public class HashEquiJoin extends Operator {
 
             // if match, create a combined tuple and fill it with the values
             // from both tuples
-            ArrayList<Tuple> l = map.get(t2.getField(pred.getField2()));
+            ArrayList<Tuple> l = map.get(t2.getField(pred.getIndex2()));
             if (l == null)
                 continue;
             listIt = l.iterator();

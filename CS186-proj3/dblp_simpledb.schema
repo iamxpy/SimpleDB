@@ -1,4 +1,0 @@
-authors (id int, name string)
-venues (id int, name string, year int, type int)
-papers (id int, title string, venueid int)
-paperauths (paperid int, authorid int)

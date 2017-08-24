@@ -1,9 +1,10 @@
 package simpledb;
 
+import simpledb.TupleDesc.TDItem;
+
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Iterator;
-import simpledb.TupleDesc.TDItem;
 
 public class QueryPlanVisualizer {
 
@@ -111,8 +112,8 @@ public class QueryPlanVisualizer {
                 Join j = (Join) plan;
                 TupleDesc td = j.getTupleDesc();
                 JoinPredicate jp = j.getJoinPredicate();
-                String field1 = td.getFieldName(jp.getField1());
-                String field2 = td.getFieldName(jp.getField2()
+                String field1 = td.getFieldName(jp.getIndex1());
+                String field2 = td.getFieldName(jp.getIndex2()
                         + children[0].getTupleDesc().numFields());
                 thisNode.text = String.format("%1$s(%2$s),card:%3$d", JOIN,
                         field1 + jp.getOperator() + field2,j.getEstimatedCardinality());
@@ -140,8 +141,8 @@ public class QueryPlanVisualizer {
                 HashEquiJoin j = (HashEquiJoin) plan;
                 JoinPredicate jp = j.getJoinPredicate();
                 TupleDesc td = j.getTupleDesc();
-                String field1 = td.getFieldName(jp.getField1());
-                String field2 = td.getFieldName(jp.getField2()
+                String field1 = td.getFieldName(jp.getIndex1());
+                String field2 = td.getFieldName(jp.getIndex2()
                         + children[0].getTupleDesc().numFields());
                 thisNode.text = String.format("%1$s(%2$s),card:%3$d", HASH_JOIN, field1
                         + jp.getOperator() + field2,j.getEstimatedCardinality());
@@ -170,7 +171,7 @@ public class QueryPlanVisualizer {
                 int upBarShift = parentUpperBarStartShift;
                 String alignTxt;
                 TupleDesc td = a.getTupleDesc();
-                int gfield = a.groupField();
+                int gfield = a.groupFieldIndex();
 
                 if (gfield == Aggregator.NO_GROUPING) {
                     thisNode.text = String.format("%1$s(%2$s),card:%3$d",
@@ -200,7 +201,7 @@ public class QueryPlanVisualizer {
                 Filter f = (Filter) plan;
                 Predicate p = f.getPredicate();
                 thisNode.text = String.format("%1$s(%2$s),card:%3$d", SELECT, children[0]
-                        .getTupleDesc().getFieldName(p.getField())
+                        .getTupleDesc().getFieldName(p.getIndex())
                         + p.getOp()
                         + p.getOperand(),f.getEstimatedCardinality());
                 int upBarShift = parentUpperBarStartShift;

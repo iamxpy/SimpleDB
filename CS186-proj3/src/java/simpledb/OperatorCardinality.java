@@ -57,7 +57,7 @@ public class OperatorCardinality {
             Map<String, TableStats> tableStats) {
         DbIterator child = f.getChildren()[0];
         Predicate pred = f.getPredicate();
-        String[] tmp = child.getTupleDesc().getFieldName(pred.getField())
+        String[] tmp = child.getTupleDesc().getFieldName(pred.getIndex())
                 .split("[.]");
         String tableAlias = tmp[0];
         String pureFieldName = tmp[1];
@@ -214,7 +214,7 @@ public class OperatorCardinality {
             childCard = oChild.getEstimatedCardinality();
         }
 
-        if (a.groupField() == Aggregator.NO_GROUPING) {
+        if (a.groupFieldIndex() == Aggregator.NO_GROUPING) {
             a.setEstimatedCardinality(1);
             return hasJoinPK;
         }
