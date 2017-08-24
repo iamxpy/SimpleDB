@@ -189,7 +189,6 @@ public class TupleDesc implements Serializable {
             throw new NoSuchElementException();
         }
         String fieldName;
-        // TODO: 17-5-22 improve this,不要使用遍历
         for (int i = 0; i < tdAr.length; i++) {
             if ((fieldName = tdAr[i].fieldName) != null && fieldName.equals(name)) {
                 return i;

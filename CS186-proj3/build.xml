@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="simpledb" default="dist">
+    <property name="src" location="src"/>
+    <property name="testd" location="test"/>
+
+    <property name="build" location="bin"/>
+    <property name="build.src" location="${build}/src"/>
+    <property name="build.test" location="${build}/test"/>
+    <property name="depcache" location="${build}/depcache"/>
+
+    <property name="lib" location="lib"/>
+    <property name="doc" location="javadoc"/>
+    <property name="dist" location="dist"/>
+    <property name="jarfile" location="${dist}/${ant.project.name}.jar"/>
+    <property name="compile.debug" value="true"/>
+    <property name="test.reports" location="testreport"/>
+
+    <property name="sourceversion" value="1.5"/>
+
+    <path id="classpath.base">
+        <pathelement location="${build.src}"/>
+        <pathelement location="${lib}/zql.jar"/>
+        <pathelement location="${lib}/jline-0.9.94.jar"/>
+        <pathelement location="${lib}/mina-core-2.0.4.jar"/>
+        <pathelement location="${lib}/mina-filter-compression-2.0.4.jar"/>
+        <pathelement location="${lib}/slf4j-api-1.6.1.jar"/>
+    </path>
+
+    <path id="classpath.test">
+        <path refid="classpath.base"/>
+        <pathelement location="${build.test}"/>
+        <pathelement location="${lib}/junit-4.5.jar"/>
+    </path>
+
+    <!-- Common macro for compiling Java source -->
+    <macrodef name="Compile">
+        <attribute name="srcdir"/>
+        <attribute name="destdir"/>
+        <element name="compileoptions" implicit="true" optional="true"/>
+        <sequential>
+            <mkdir dir="@{destdir}"/>
+            <!-- avoids needing ant clean when changing interfaces -->
+            <depend srcdir="${srcdir}" destdir="${destdir}" cache="${depcache}"/>
+            <javac srcdir="@{srcdir}" destdir="@{destdir}" includeAntRuntime="no"
+                    debug="${compile.debug}" source="${sourceversion}">
+                <compilerarg value="-Xlint:unchecked" />
+                <!--<compilerarg value="-Xlint:deprecation" />-->
+                <compileoptions/>
+            </javac>
+        </sequential>
+    </macrodef>
+
+    <!-- Common macro for running junit tests in both the test and runtest targets -->
+    <macrodef name="RunJunit">
+        <attribute name="haltonfailure" default="yes" />
+        <element name="testspecification" implicit="yes" />
+        <sequential>
+            <!-- timeout at 10.5 minutes, since TransactionTest is limited to 10 minutes. -->
+            <junit printsummary="on" fork="yes" timeout="630000" haltonfailure="@{haltonfailure}" maxmemory="128M" failureproperty="junit.failed">
+                <classpath refid="classpath.test" />
+                <formatter type="plain" usefile="false"/>
+                <assertions><enable/></assertions>
+                <testspecification/>
+            </junit>
+        </sequential>
+    </macrodef>
+    <target name="eclipse" description="Make current directory an eclipse
+    project">
+        <echo file=".project" append="false">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;projectDescription&gt;
+	&lt;name&gt;simpledb&lt;/name&gt;
+	&lt;comment&gt;&lt;/comment&gt;
+	&lt;projects&gt;
+	&lt;/projects&gt;
+	&lt;buildSpec&gt;
+		&lt;buildCommand&gt;
+			&lt;name&gt;org.eclipse.jdt.core.javabuilder&lt;/name&gt;
+			&lt;arguments&gt;
+			&lt;/arguments&gt;
+		&lt;/buildCommand&gt;
+	&lt;/buildSpec&gt;
+	&lt;natures&gt;
+		&lt;nature&gt;org.eclipse.jdt.core.javanature&lt;/nature&gt;
+	&lt;/natures&gt;
+&lt;/projectDescription&gt;</echo>
+        <echo file=".classpath" append="false">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;classpath&gt;
+	&lt;classpathentry kind=&quot;src&quot; output=&quot;bin/src&quot; path=&quot;src/java&quot;/&gt;
+	&lt;classpathentry kind=&quot;src&quot; output=&quot;bin/test&quot; path=&quot;test&quot;/&gt;
+	&lt;classpathentry kind=&quot;lib&quot; path=&quot;lib/jline-0.9.94.jar&quot;/&gt;
+	&lt;classpathentry kind=&quot;lib&quot; path=&quot;lib/junit-4.5.jar&quot;/&gt;
+	&lt;classpathentry kind=&quot;lib&quot; path=&quot;lib/zql.jar&quot;/&gt;
+	&lt;classpathentry kind=&quot;lib&quot; path=&quot;lib/mina-core-2.0.4.jar&quot;/&gt;
+	&lt;classpathentry kind=&quot;lib&quot; path=&quot;lib/mina-filter-compression-2.0.4.jar&quot;/&gt;
+	&lt;classpathentry kind=&quot;lib&quot; path=&quot;lib/jzlib-1.0.7.jar&quot;/&gt;
+	&lt;classpathentry kind=&quot;lib&quot; path=&quot;lib/slf4j-api-1.6.1.jar&quot;/&gt;
+	&lt;classpathentry kind=&quot;con&quot; path=&quot;org.eclipse.jdt.launching.JRE_CONTAINER&quot;/&gt;
+	&lt;classpathentry kind=&quot;output&quot; path=&quot;bin/src&quot;/&gt;
+&lt;/classpath&gt;</echo>
+    </target>
+
+    <target name="compile" description="Compile code">
+        <Compile srcdir="${src}/java" destdir="${build.src}">
+            <classpath refid="classpath.base"/>
+        </Compile>
+	<copy todir="${build}" flatten="true">
+		<fileset dir="${src}">
+			<include name="bin/*.sh"/>
+		</fileset>
+	</copy>
+    </target>
+
+    <target name="javadocs" description="Build javadoc documentation">
+        <javadoc destdir="${doc}" access="private" failonerror="true" source="${sourceversion}">
+            <classpath refid="classpath.base" />
+            <fileset dir="src/java" defaultexcludes="yes">
+                <include name="simpledb/**/*.java"/>
+            </fileset>
+        </javadoc>
+    </target>
+
+    <target name="dist" depends="compile" description="Build jar">
+        <mkdir dir="${dist}"/>
+        <jar jarfile="${jarfile}" basedir="${build.src}">
+            <manifest>
+                <attribute name="Main-Class" value="simpledb.SimpleDb"/>
+                <attribute name="Class-Path" value="../lib/zql.jar ../lib/jline-0.9.94.jar mina-core-2.0.4.jar mina-filter-compression-2.0.4.jar slf4j-api-1.6.1.jar"/>
+            </manifest>
+            <!-- Merge library jars into final jar file -->
+            <!--<zipgroupfileset refid="lib.jars"/>-->
+        </jar>
+    </target>
+
+    <target name="clean" description="Remove build and dist directories">
+        <delete dir="${build}"/>
+        <delete dir="${dist}"/>
+        <delete dir="${doc}"/>
+    </target>
+
+    <target name="testcompile" depends="compile" description="Compile all unit and system tests">
+        <Compile srcdir="${testd}" destdir="${build.test}">
+            <classpath refid="classpath.test"/>
+        </Compile>
+    </target>
+
+    <target name="test" depends="testcompile" description="Run all unit tests">
+        <RunJunit>
+            <batchtest>
+                <fileset dir="${build.test}">
+                    <include name="**/*Test.class"/>
+                    <exclude name="**/*$*.class"/>
+                    <exclude name="simpledb/systemtest/*.class"/>
+                </fileset>
+            </batchtest>
+        </RunJunit>
+    </target>
+
+    <target name="systemtest" depends="testcompile" description="Run all system tests">
+        <RunJunit>
+            <batchtest>
+                <fileset dir="${build.test}">
+                    <include name="simpledb/systemtest/*Test.class"/>
+                </fileset>
+            </batchtest>
+        </RunJunit>
+    </target>
+
+    <target name="runtest" depends="testcompile"
+            description="Runs the test you specify on the command line with -Dtest=">
+        <!-- Check for -Dtest command line argument -->
+        <fail unless="test" message="You must run this target with -Dtest=TestName"/>
+
+        <!-- Check if the class exists -->
+        <available property="test.exists" classname="simpledb.${test}">
+                <classpath refid="classpath.test" />
+        </available>
+        <fail unless="test.exists" message="Test ${test} could not be found"/>
+
+        <RunJunit>
+            <test name="simpledb.${test}"/>
+        </RunJunit>
+    </target>
+
+    <target name="runsystest" depends="testcompile"
+            description="Runs the system test you specify on the command line with -Dtest=">
+        <!-- Check for -Dtest command line argument -->
+        <fail unless="test" message="You must run this target with -Dtest=TestName"/>
+
+        <!-- Check if the class exists -->
+        <available property="test.exists" classname="simpledb.systemtest.${test}">
+                <classpath refid="classpath.test" />
+        </available>
+        <fail unless="test.exists" message="Test ${test} could not be found"/>
+
+        <RunJunit>
+            <test name="simpledb.systemtest.${test}"/>
+        </RunJunit>
+    </target>
+
+    <!-- The following target is used for automated grading. -->
+    <target name="test-report" depends="testcompile"
+            description="Generates HTML test reports in ${test.reports}">
+        <mkdir dir="${test.reports}"/>
+
+        <!-- do not halt on failure so we always produce HTML reports. -->
+        <RunJunit haltonfailure="no">
+            <formatter type="xml"/>
+            <formatter type="plain" usefile="true"/>
+            <batchtest todir="${test.reports}" >
+                <fileset dir="${build.test}">
+                    <include name="**/*Test.class"/>
+                    <exclude name="**/*$*.class"/>
+                </fileset>
+            </batchtest>
+        </RunJunit>
+
+        <junitreport todir="${test.reports}">
+            <fileset dir="${test.reports}">
+                <include name="TEST-*.xml" />
+            </fileset>
+            <report todir="${test.reports}" />
+        </junitreport>
+        
+        <!-- Fail here if the junit tests failed. -->
+        <fail if="junit.failed" message="Some JUnit tests failed"/>
+    </target>
+    
+    <target name="handin" depends="clean"
+        description="Create a tarball of your code to hand in">
+        <tar destfile="CS186-proj3.tar.gz" compression="gzip"
+            basedir="." />
+        <echo message="Tarball created!  Please submit 'CS186-proj3.tar.gz' per the instructions in the project document." />
+    <subant target="dist">
+        <fileset dir="." includes="build.xml"/>
+    </subant>
+    </target>
+
+    <target name="test-and-handin" depends="test,systemtest,handin"
+        description="Run all the tests and system tests; if they succeed, create a tarball of the source code to submit" />
+
+</project>

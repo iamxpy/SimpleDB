@@ -99,17 +99,6 @@ public class Filter extends Operator {
             return filterResult.next();
         else return null;
     }
-//    protected Tuple fetchNext() throws NoSuchElementException,
-//            TransactionAbortedException, DbException {
-//        // some code goes here
-//        while (child.hasNext()) {
-//            Tuple t = child.next();
-//            if (predicate.filter(t)) {
-//                return t;
-//            }
-//        }
-//        return null;
-//    }
 
     @Override
     public DbIterator[] getChildren() {
