@@ -28,6 +28,7 @@ public class Join extends Operator {
     // 对于测试案例中的两个大表的Join，使用默认大小需要25s，使用2倍大小需要15s，
     // 5倍需要10s，10倍则需要6s，所以权衡时间和空间的消耗来说，5倍比较合适
     private int blockMemory = 131072*5;
+//    private int blockMemory = 131072;
 
 
     /**

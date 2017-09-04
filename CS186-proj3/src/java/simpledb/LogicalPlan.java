@@ -1,11 +1,6 @@
 package simpledb;
-import java.util.Map;
-import java.util.Vector;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * LogicalPlan represents a logical query plan that has been through
@@ -346,7 +341,9 @@ public class LogicalPlan {
         
         JoinOptimizer jo = new JoinOptimizer(this,joins);
 
-        joins = jo.orderJoins(statsMap,filterSelectivities,explain);
+        if (joins.size() != 0) {//课程给的原方法没有这个判断，加上后防止没有join时optimizer被调用而返回null
+            joins = jo.orderJoins(statsMap,filterSelectivities,explain);
+        }
 
         Iterator<LogicalJoinNode> joinIt = joins.iterator();
         while (joinIt.hasNext()) {
@@ -382,7 +379,7 @@ public class LogicalPlan {
                 throw new ParsingException("Unknown table in WHERE clause " + lj.t2Alias);
             
             DbIterator j;
-            j = jo.instantiateJoin(lj,plan1,plan2);
+            j = JoinOptimizer.instantiateJoin(lj,plan1,plan2);
             subplanMap.put(t1name, j);
 
             if (!isSubqueryJoin) {
@@ -543,4 +540,10 @@ public class LogicalPlan {
        
     }
 
+    public TupleDesc getTupleDesc(String alia){
+        if (tableMap.containsKey(alia)) {
+            return Database.getCatalog().getDbFile(tableMap.get(alia)).getTupleDesc();
+        }
+        throw new IllegalArgumentException();
+    }
 }

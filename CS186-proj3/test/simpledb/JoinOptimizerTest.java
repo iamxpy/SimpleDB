@@ -1,18 +1,17 @@
 package simpledb;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import simpledb.systemtest.SimpleDbTestBase;
+import simpledb.systemtest.SystemTestUtil;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Vector;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import simpledb.systemtest.SimpleDbTestBase;
-import simpledb.systemtest.SystemTestUtil;
 
 public class JoinOptimizerTest extends SimpleDbTestBase {
 	
@@ -95,30 +94,32 @@ public class JoinOptimizerTest extends SimpleDbTestBase {
         TransactionId tid = new TransactionId();
         JoinOptimizer jo;
         Parser p = new Parser();
-		jo = new JoinOptimizer(p.generateLogicalPlan(tid, "SELECT * FROM " + tableName1 + " t1, " + tableName2 + " t2 WHERE t1.c1 = t2.c2;"), 
+		String t1Alia = "t1";
+		String t2Alia = "t2";
+		jo = new JoinOptimizer(p.generateLogicalPlan(tid, "SELECT * FROM " + tableName1 + " t1, " + tableName2 + " t2 WHERE t1.c1 = t2.c2;"),
 											new Vector<LogicalJoinNode>());
 		// 1 join 2
-		LogicalJoinNode equalsJoinNode = new LogicalJoinNode(tableName1, tableName2, Integer.toString(1), Integer.toString(2), Predicate.Op.EQUALS);
+		LogicalJoinNode equalsJoinNode = new LogicalJoinNode(t1Alia, t2Alia, Integer.toString(1), Integer.toString(2), Predicate.Op.EQUALS);
 		checkJoinEstimateCosts(jo, equalsJoinNode);
 		// 2 join 1
-		jo = new JoinOptimizer(p.generateLogicalPlan(tid, "SELECT * FROM " + tableName1 + " t1, " + tableName2 + " t2 WHERE t1.c1 = t2.c2;"), 
+		jo = new JoinOptimizer(p.generateLogicalPlan(tid, "SELECT * FROM " + tableName1 + " t1, " + tableName2 + " t2 WHERE t1.c1 = t2.c2;"),
 				new Vector<LogicalJoinNode>());
-		equalsJoinNode = new LogicalJoinNode(tableName2, tableName1, Integer.toString(2), Integer.toString(1), Predicate.Op.EQUALS);
+		equalsJoinNode = new LogicalJoinNode(t2Alia, t1Alia, Integer.toString(2), Integer.toString(1), Predicate.Op.EQUALS);
 		checkJoinEstimateCosts(jo, equalsJoinNode);
 		// 1 join 1
-		jo = new JoinOptimizer(p.generateLogicalPlan(tid, "SELECT * FROM " + tableName1 + " t1, " + tableName1 + " t2 WHERE t1.c3 = t2.c4;"), 
+		jo = new JoinOptimizer(p.generateLogicalPlan(tid, "SELECT * FROM " + tableName1 + " t1, " + tableName1 + " t2 WHERE t1.c3 = t2.c4;"),
 				new Vector<LogicalJoinNode>());
-		equalsJoinNode = new LogicalJoinNode(tableName1, tableName1, Integer.toString(3), Integer.toString(4), Predicate.Op.EQUALS);
+		equalsJoinNode = new LogicalJoinNode(t1Alia, t1Alia, Integer.toString(3), Integer.toString(4), Predicate.Op.EQUALS);
 		checkJoinEstimateCosts(jo, equalsJoinNode);	
 		// 2 join 2
-		jo = new JoinOptimizer(p.generateLogicalPlan(tid, "SELECT * FROM " + tableName2 + " t1, " + tableName2 + " t2 WHERE t1.c8 = t2.c7;"), 
+		jo = new JoinOptimizer(p.generateLogicalPlan(tid, "SELECT * FROM " + tableName2 + " t1, " + tableName2 + " t2 WHERE t1.c8 = t2.c7;"),
 				new Vector<LogicalJoinNode>());
-		equalsJoinNode = new LogicalJoinNode(tableName2, tableName2, Integer.toString(8), Integer.toString(7), Predicate.Op.EQUALS);
+		equalsJoinNode = new LogicalJoinNode(t2Alia, t2Alia, Integer.toString(8), Integer.toString(7), Predicate.Op.EQUALS);
 		checkJoinEstimateCosts(jo, equalsJoinNode);		
 	}
 	
 	private void checkJoinEstimateCosts(JoinOptimizer jo,
-			LogicalJoinNode equalsJoinNode) {
+										LogicalJoinNode equalsJoinNode) {
 		int card1s[] = new int[20]; 
 		int card2s[] = new int[card1s.length];
 		double cost1s[] = new double[card1s.length]; 
@@ -167,7 +168,7 @@ public class JoinOptimizerTest extends SimpleDbTestBase {
 	@Test public void estimateJoinCardinality() throws ParsingException {
         TransactionId tid = new TransactionId();
         Parser p = new Parser();
-		JoinOptimizer j = new JoinOptimizer(p.generateLogicalPlan(tid, "SELECT * FROM " + tableName2 + " t1, " + tableName2 + " t2 WHERE t1.c8 = t2.c7;"), 
+		JoinOptimizer j = new JoinOptimizer(p.generateLogicalPlan(tid, "SELECT * FROM " + tableName2 + " t1, " + tableName2 + " t2 WHERE t1.c8 = t2.c7;"),
 		new Vector<LogicalJoinNode>());
 
 		double cardinality;
@@ -319,7 +320,7 @@ public class JoinOptimizerTest extends SimpleDbTestBase {
 			bigHeapFileTuples.add( smallHeapFileTuples.get( i%100 ) );
 		}
 		HeapFile bigHeapFile = createDuplicateHeapFile(bigHeapFileTuples, 2, "c");
-		Database.getCatalog().addTable(bigHeapFile, "bigTable");
+//		Database.getCatalog().addTable(bigHeapFile, "bigTable");
 
 		// Add the tables to the database
 		Database.getCatalog().addTable(bigHeapFile, "bigTable");

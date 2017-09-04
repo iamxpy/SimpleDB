@@ -131,7 +131,7 @@ public class IntHistogram {
             case NOT_EQUALS:
                 return 1 - estimateSelectivity(Predicate.Op.EQUALS, v);
             default:
-                throw new RuntimeException("Cannot reach hear");
+                throw new RuntimeException("Should not reach hear");
         }
     }
 
@@ -153,6 +153,6 @@ public class IntHistogram {
     public String toString() {
 
         // some code goes here
-        return null;
+        return "[to be implemented]";
     }
 }

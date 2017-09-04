@@ -4,4 +4,5 @@
 *bin
 *lib
 *dist
-CS186-proj1/some_data_file.dat
+*.dat
+*.schema

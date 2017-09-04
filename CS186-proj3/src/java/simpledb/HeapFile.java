@@ -178,7 +178,7 @@ public class HeapFile implements DbFile {
 
     /**
      * 对HeapFile的一部分Page进行缓存，并只允许一次性使用(貌似有点浪费。。)
-     * clear()-> addPage()-> init()为设计好的常用调用次序,这三个方法用和getNum()用于管理状态
+     * clear()-> addPage()-> init()为设计好的常用调用次序,这三个方法和getNum()用于管理状态
      * next()，和hasNext()是向外提供的使用接口
      */
     private class OneOffCachePages {
@@ -202,7 +202,7 @@ public class HeapFile implements DbFile {
         public OneOffCachePages(double cacheRate, int pageNum) {
             cachePages = new ArrayList<>();
             int tmp = (int) (pageNum * cacheRate);
-            num = tmp < 1 ? 1 : tmp;//计算得到需要缓存的page数目，如果总的page数目小于10,则设置为1
+            num = tmp < 1 ? 1 : tmp;//计算得到需要缓存的page数目，如果总的page数目小于1,则设置为1
         }
 
         /**

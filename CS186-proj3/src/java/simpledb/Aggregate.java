@@ -69,6 +69,7 @@ public class Aggregate extends Operator {
         } else if (aggreType == Type.STRING_TYPE) {
             aggregator = new StringAggregator(gbIndex, gbFieldType, agIndex, aggreOp, getTupleDesc());
         }
+        aggregateIter = aggregator.iterator();//这里先初始化一次是为了给一些方法提供信息，真正的初始化在open方法
     }
 
     /**

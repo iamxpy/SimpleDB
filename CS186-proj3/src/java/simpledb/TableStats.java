@@ -61,9 +61,7 @@ public class TableStats {
      */
     static final int NUM_HIST_BINS = 100;
 
-
-    //Key是该的每一列的FieldName，Value是最小值和最大值的数组
-    private HashMap<String, Integer[]> attrs;
+    private HashMap<String, Integer[]> attrs;//Key是该表的每一列的FieldName，Value是最小值和最大值的数组
     private HashMap<String, Object> name2hist;
     private HeapFile table;
     private int ntups;
@@ -92,7 +90,7 @@ public class TableStats {
         td = table.getTupleDesc();
         attrs = new HashMap<>();
         name2hist = new HashMap<>();
-        Transaction t = new Transaction();
+        Transaction t = new Transaction();//查询计划的Transaction是在这里新建的
         DbFileIterator iter = table.iterator(t.getId());
         process(iter);
     }
