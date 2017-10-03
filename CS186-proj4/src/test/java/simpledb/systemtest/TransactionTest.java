@@ -1,5 +1,8 @@
 package simpledb.systemtest;
 
+import org.junit.Test;
+import simpledb.*;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,13 +10,9 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.Arrays;
 
-import org.junit.Test;
-
-import simpledb.*;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Tests running concurrent transactions.
@@ -33,6 +32,7 @@ public class TransactionTest extends SimpleDbTestBase {
         XactionTester[] list = new XactionTester[threads];
         for(int i = 0; i < list.length; i++) {
             list[i] = new XactionTester(table.getId(), latch);
+            list[i].setName("Test Thread " + i);
             list[i].start();
         }
 

@@ -16,4 +16,21 @@ public class LockState {
     public Permissions getPerm() {
         return perm;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        LockState lockState = (LockState) o;
+
+        return tid.equals(lockState.tid) && perm.equals(lockState.perm);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = tid.hashCode();
+        result = 31 * result + perm.hashCode();
+        return result;
+    }
 }

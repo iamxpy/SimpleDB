@@ -1,7 +1,8 @@
 package simpledb;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -34,10 +35,10 @@ public class BufferPool {
     public final int PAGES_NUM;
 
     //当前的缓存页
-    private LruCache<PageId, Page> lruPagesPool;
+    private PageLruCache lruPagesPool;
 
     //锁管理器
-    private LockManager lockManager;
+    private final LockManager lockManager;
 
     /**
      * Creates a BufferPool that caches up to numPages pages.
@@ -47,7 +48,7 @@ public class BufferPool {
     public BufferPool(int numPages) {
         // some code goes here
         PAGES_NUM = numPages;
-        lruPagesPool = new LruCache<>(PAGES_NUM);
+        lruPagesPool = new PageLruCache(PAGES_NUM);
         lockManager = new LockManager();
     }
 
@@ -65,27 +66,30 @@ public class BufferPool {
      * @param tid  the ID of the transaction requesting the page
      * @param pid  the ID of the requested page
      * @param perm the requested permissions on the page
+     * @see LockManager#grantSLock(TransactionId, PageId)
+     * @see LockManager#grantXLock(TransactionId, PageId)
+     * @see GrantResult
      */
     public Page getPage(TransactionId tid, PageId pid, Permissions perm)
             throws TransactionAbortedException, DbException, InterruptedException {
         // some code goes here
         synchronized (pid) {
-            if (lockManager.isPageLocked(pid)) {
-                if (perm.equals(Permissions.READ_ONLY)) {//如果该page已经有锁且本事务想获得读锁
-                    //已经有事务对这个Page加了写锁，则需要在这个page上阻塞
-                    if (!lockManager.pageReadable(pid)) {
-                        pid.wait();
-                    }
-                    //如果该page已经有锁且tid想获得写锁
-                } else if (lockManager.lockUpgradable(pid, tid)) {//如果可以升级为写锁,则释放之前的读锁
-                    releasePage(tid, pid);
-                } else {
-                    pid.wait();
+            GrantResult result = (perm == Permissions.READ_ONLY) ? lockManager.grantSLock(tid, pid)
+                    : lockManager.grantXLock(tid, pid);
+            while (result == GrantResult.MUST_WAIT) {//不可加锁，需要阻塞
+                if (lockManager.leadToDeadLock(tid, pid)) {
+                    throw new TransactionAbortedException();
                 }
+                lockManager.addWaitingInfo(tid, pid);
+                pid.wait();
+                //wait之后再次判断result
+                result = (perm == Permissions.READ_ONLY) ? lockManager.grantSLock(tid, pid)
+                        : lockManager.grantXLock(tid, pid);
             }
-            //现在可以加锁了
-            LockState ls = new LockState(tid, perm);
-            lockManager.lock(pid, ls);
+            if (result == GrantResult.CAN_HOLD) {
+                LockState ls = new LockState(tid, perm);
+                lockManager.lock(pid, ls);
+            }
         }
 
         HeapPage page = (HeapPage) lruPagesPool.get(pid);
@@ -119,7 +123,11 @@ public class BufferPool {
     public void releasePage(TransactionId tid, PageId pid) {
         // some code goes here
         // not necessary for proj1
-        lockManager.unlock(tid, pid);
+        if (!lockManager.unlock(tid, pid)) {
+            //pid does not locked by any transaction
+            //or tid  dose not lock the page pid
+            throw new IllegalArgumentException();
+        }
     }
 
     /**
@@ -130,6 +138,7 @@ public class BufferPool {
     public void transactionComplete(TransactionId tid) throws IOException {
         // some code goes here
         // not necessary for proj1
+        transactionComplete(tid, true);
     }
 
     /**
@@ -138,7 +147,7 @@ public class BufferPool {
     public boolean holdsLock(TransactionId tid, PageId p) {
         // some code goes here
         // not necessary for proj1
-        return lockManager.holdsLock(tid, p);
+        return lockManager.getLockState(tid, p) != null;
     }
 
     /**
@@ -151,7 +160,27 @@ public class BufferPool {
     public void transactionComplete(TransactionId tid, boolean commit)
             throws IOException {
         // some code goes here
-        // not necessary for proj1
+        lockManager.releaseTransactionLocks(tid);
+        if (commit) {
+            flushPages(tid);
+        } else {
+            revertTransactionAction(tid);
+        }
+    }
+
+    /**
+     * 在事务回滚时，撤销该事务对page造成的改变
+     *
+     * @param tid
+     */
+    private void revertTransactionAction(TransactionId tid) {
+        Iterator<Page> it = lruPagesPool.iterator();
+        while (it.hasNext()) {
+            Page p = it.next();
+            if (p.isDirty() != null && p.isDirty().equals(tid)) {
+                lruPagesPool.reCachePage(p.getId());
+            }
+        }
     }
 
     /**
@@ -216,7 +245,10 @@ public class BufferPool {
         // not necessary for proj1
         Iterator<Page> it = lruPagesPool.iterator();
         while (it.hasNext()) {
-            flushPage(it.next());
+            Page p = it.next();
+            if (p.isDirty() != null) {
+                flushPage(p);
+            }
         }
     }
 
@@ -250,10 +282,18 @@ public class BufferPool {
 
     /**
      * Write all pages of the specified transaction to disk.
+     * 我实现的是将tid相关的而且dirty的page刷新到磁盘
      */
     public synchronized void flushPages(TransactionId tid) throws IOException {
         // some code goes here
         // not necessary for proj1
+        Iterator<Page> it = lruPagesPool.iterator();
+        while (it.hasNext()) {
+            Page p = it.next();
+            if (p.isDirty() != null && p.isDirty().equals(tid)) {
+                flushPage(p);
+            }
+        }
     }
 
 

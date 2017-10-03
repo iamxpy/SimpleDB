@@ -48,7 +48,7 @@ public class Utility {
      */
     public static Tuple getHeapTuple(int n) {
         Tuple tup = new Tuple(getTupleDesc(1));
-        tup.setRecordId(new RecordId(new HeapPageId(1, 2), 3));
+        tup.setRecordId(new RecordId(HeapPageId.getOrNewId(1, 2), 3));
         tup.setField(0, new IntField(n));
         return tup;
     }
@@ -59,7 +59,7 @@ public class Utility {
      */
     public static Tuple getHeapTuple(int[] tupdata) {
         Tuple tup = new Tuple(getTupleDesc(tupdata.length));
-        tup.setRecordId(new RecordId(new HeapPageId(1, 2), 3));
+        tup.setRecordId(new RecordId(HeapPageId.getOrNewId(1, 2), 3));
         for (int i = 0; i < tupdata.length; ++i)
             tup.setField(i, new IntField(tupdata[i]));
         return tup;
@@ -71,7 +71,7 @@ public class Utility {
      */
     public static Tuple getHeapTuple(int n, int width) {
         Tuple tup = new Tuple(getTupleDesc(width));
-        tup.setRecordId(new RecordId(new HeapPageId(1, 2), 3));
+        tup.setRecordId(new RecordId(HeapPageId.getOrNewId(1, 2), 3));
         for (int i = 0; i < width; ++i)
             tup.setField(i, new IntField(n));
         return tup;
@@ -109,7 +109,7 @@ public class Utility {
         fos.close();
 
         HeapFile hf = openHeapFile(cols, f);
-        HeapPageId pid = new HeapPageId(hf.getId(), 0);
+        HeapPageId pid = HeapPageId.getOrNewId(hf.getId(), 0);
 
         HeapPage page = null;
         try {

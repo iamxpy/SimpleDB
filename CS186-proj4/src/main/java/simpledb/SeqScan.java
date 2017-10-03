@@ -137,6 +137,7 @@ public class SeqScan implements DbIterator {
      */
     private Tuple transTd(Tuple old) {
         Tuple result = new Tuple(getTupleDesc());
+        result.setRecordId(old.getRecordId());
         for(int i=0;i<old.getTupleDesc().numFields();i++) {
             result.setField(i, old.getField(i));
         }

@@ -1,13 +1,14 @@
 package simpledb;
 
-import simpledb.TestUtil.LockGrabber;
-
-import java.util.*;
+import junit.framework.JUnit4TestAdapter;
 import org.junit.Before;
 import org.junit.Test;
+import simpledb.TestUtil.LockGrabber;
+
+import java.util.Random;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import junit.framework.JUnit4TestAdapter;
 
 public class DeadlockTest extends TestUtil.CreateHeapFile {
   private PageId p0, p1, p2;
@@ -15,7 +16,9 @@ public class DeadlockTest extends TestUtil.CreateHeapFile {
   private Random rand;
 
   private static final int POLL_INTERVAL = 100;
+//  private static final int POLL_INTERVAL = 1000;
   private static final int WAIT_INTERVAL = 200;
+//  private static final int WAIT_INTERVAL = 2000;
 
   // just so we have a pointer shorter than Database.getBufferPool
   private BufferPool bp;
@@ -39,9 +42,9 @@ public class DeadlockTest extends TestUtil.CreateHeapFile {
     // if this fails, complain to the TA
     assertEquals(3, empty.numPages());
 
-    this.p0 = new HeapPageId(empty.getId(), 0);
-    this.p1 = new HeapPageId(empty.getId(), 1);
-    this.p2 = new HeapPageId(empty.getId(), 2);
+    this.p0 = HeapPageId.getOrNewId(empty.getId(), 0);
+    this.p1 = HeapPageId.getOrNewId(empty.getId(), 1);
+    this.p2 = HeapPageId.getOrNewId(empty.getId(), 2);
     this.tid1 = new TransactionId();
     this.tid2 = new TransactionId();
     this.rand = new Random();

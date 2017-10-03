@@ -420,7 +420,7 @@ public class HeapPage implements Page {
                 throw new NoSuchElementException();
             }
             for (; !isSlotUsed(index); index++) {
-            }//直到找到在使用的(对应的slot非空的)tuple，再返回
+            }//空循环，直到找到在使用的(对应的slot非空的)tuple，再返回
             pos++;
             return tuples[index++];
         }

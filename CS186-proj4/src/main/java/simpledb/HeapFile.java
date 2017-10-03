@@ -124,10 +124,16 @@ public class HeapFile implements DbFile {
         // some code goes here
         ArrayList<Page> affectedPages = new ArrayList<>();
         for (int i = 0; i < numPages(); i++) {
-            HeapPageId pid = new HeapPageId(getId(), i);
-            HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_WRITE);
+//            HeapPageId pid = new HeapPageId(getId(), i);
+            HeapPageId pid = HeapPageId.getOrNewId(getId(), i);
+            HeapPage page = null;
+            try {
+                page = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_WRITE);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             if (page.getNumEmptySlots() != 0) {
-                //page的insertTuple已经负责修改tuple信息表明其存储在该page上
+                //page的insertTuple已经负责修改tuple信息来表明其存储在该page上
                 page.insertTuple(t);
                 page.markDirty(true, tid);
                 affectedPages.add(page);
@@ -136,13 +142,19 @@ public class HeapFile implements DbFile {
         }
         if (affectedPages.size() == 0) {//说明page都已经满了
             //创建一个新的空白的Page
-            HeapPageId npid = new HeapPageId(getId(), numPages());
+//            HeapPageId npid = new HeapPageId(getId(), numPages());
+            HeapPageId npid = HeapPageId.getOrNewId(getId(), numPages());
             HeapPage blankPage = new HeapPage(npid, HeapPage.createEmptyPageData());
             numPage++;
             //将其写入磁盘
             writePage(blankPage);
             //通过BufferPool来访问该新的page
-            HeapPage newPage = (HeapPage) Database.getBufferPool().getPage(tid, npid, Permissions.READ_WRITE);
+            HeapPage newPage = null;
+            try {
+                newPage = (HeapPage) Database.getBufferPool().getPage(tid, npid, Permissions.READ_WRITE);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             newPage.insertTuple(t);
             newPage.markDirty(true, tid);
             affectedPages.add(newPage);
@@ -159,8 +171,13 @@ public class HeapFile implements DbFile {
         HeapPage affectedPage = null;
         for (int i = 0; i < numPages(); i++) {
             if (i == pid.pageNumber()) {
-                affectedPage = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_WRITE);
+                try {
+                    affectedPage = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_WRITE);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 affectedPage.deleteTuple(t);
+                affectedPage.markDirty(true, tid);
             }
         }
         if (affectedPage == null) {
@@ -300,7 +317,8 @@ public class HeapFile implements DbFile {
             cachePool.clear();
             int pagePos = initPos;
             for (; pagePos < numPage && addNum < cachePool.getNum(); ) {
-                HeapPageId pid = new HeapPageId(getId(), pagePos);
+//                HeapPageId pid = new HeapPageId(getId(), pagePos);
+                HeapPageId pid = HeapPageId.getOrNewId(getId(), pagePos);
                 Iterator<Tuple> tuples = getTuplesInPage(pid);
                 cachePool.addPage(tuples);
                 addNum = ++pagePos - initPos;
@@ -321,7 +339,12 @@ public class HeapFile implements DbFile {
          */
         public Iterator<Tuple> getTuplesInPage(HeapPageId pid) throws TransactionAbortedException, DbException {
             // 不能直接使用HeapFile的readPage方法，而是通过BufferPool来获得page，理由见readPage()方法的Javadoc
-            HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_ONLY);
+            HeapPage page = null;
+            try {
+                page = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_ONLY);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             return page.iterator();
         }
 
