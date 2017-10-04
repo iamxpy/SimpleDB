@@ -42,9 +42,9 @@ public class DeadlockTest extends TestUtil.CreateHeapFile {
     // if this fails, complain to the TA
     assertEquals(3, empty.numPages());
 
-    this.p0 = HeapPageId.getOrNewId(empty.getId(), 0);
-    this.p1 = HeapPageId.getOrNewId(empty.getId(), 1);
-    this.p2 = HeapPageId.getOrNewId(empty.getId(), 2);
+    this.p0 = new HeapPageId(empty.getId(), 0);
+    this.p1 = new HeapPageId(empty.getId(), 1);
+    this.p2 = new HeapPageId(empty.getId(), 2);
     this.tid1 = new TransactionId();
     this.tid2 = new TransactionId();
     this.rand = new Random();

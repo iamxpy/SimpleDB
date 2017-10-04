@@ -1,15 +1,10 @@
 package simpledb;
 
-import java.util.HashSet;
-
 /**
  * Unique identifier for HeapPage objects.
  * 我将其实现为每个HeapPageId都为唯一的对象，即多次新建为同一个对象
  */
 public class HeapPageId implements PageId {
-
-    //缓存所有新建过的pid
-    private volatile static HashSet<HeapPageId> pids = new HashSet<>();
 
     private int tableId;
 
@@ -22,28 +17,10 @@ public class HeapPageId implements PageId {
      * @param tableId The table that is being referenced
      * @param pgNo    The page number in that table.
      */
-    private HeapPageId(int tableId, int pgNo) {
+    public HeapPageId(int tableId, int pgNo) {
         // some code goes here
         this.tableId = tableId;
         this.pageNum = pgNo;
-    }
-
-    public static HeapPageId getOrNewId(int tableId, int paNo) {
-        HeapPageId newId = new HeapPageId(tableId, paNo);
-        for (HeapPageId existId : pids) {
-            //已经存在则返回
-            if (existId.equals(newId)) return existId;
-        }
-        //不存在则进入同步代码块
-        synchronized (HeapPageId.class) {
-            for (HeapPageId existId : pids) {
-                //再次检查是否存在，如果存在直接返回
-                if (existId.equals(newId)) return existId;
-            }
-            //否则将新建的pid加入集合，并将其返回
-            pids.add(newId);
-            return newId;
-        }
     }
 
     /**

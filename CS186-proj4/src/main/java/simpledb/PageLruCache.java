@@ -26,10 +26,11 @@ public class PageLruCache extends LruCache<PageId, Page> {
             Page removed = null;
             if (cachedEntries.size() == capacity) {
                 Page toRemoved = null;
-                Node n=tail;
-                while ((toRemoved = n.value).isDirty() != null){
+                Node n = tail;
+                while ((toRemoved = n.value).isDirty() != null) {
                     n = n.front;
-                    if (n == head) throw new CacheException("Page Cache is full and all pages in cache are dirty, not supported to put now");
+                    if (n == head)
+                        throw new CacheException("Page Cache is full and all pages in cache are dirty, not supported to put now");
                 }
                 //在链表中删除该node,以及缓存中删除page
                 removePage(toRemoved.getId());
@@ -45,25 +46,27 @@ public class PageLruCache extends LruCache<PageId, Page> {
 
     /**
      * 删除cache中pageId对应的page
+     *
      * @param pid
      */
     private synchronized void removePage(PageId pid) {
         if (!isCached(pid)) {
             throw new IllegalArgumentException();
         }
-        Node toRemoved=head;
+        Node toRemoved = head;
         //这里不需要超出链表尾的判断（toRemoved为null），因为到这里肯定存在该page
-        while (!(toRemoved = toRemoved.next).key.equals(pid));
+        while (!(toRemoved = toRemoved.next).key.equals(pid)) ;
         if (toRemoved == tail) {
             removeTail();
-        }else {
-            toRemoved.next.front=toRemoved.front;
+        } else {
+            toRemoved.next.front = toRemoved.front;
             toRemoved.front.next = toRemoved.next;
         }
     }
 
     /**
      * 将pid对应的page从磁盘中再次读入，即将其恢复为磁盘中该page的状态
+     *
      * @param pid
      */
     public synchronized void reCachePage(PageId pid) {
@@ -75,18 +78,18 @@ public class PageLruCache extends LruCache<PageId, Page> {
         HeapPage originalPage = (HeapPage) table.readPage(pid);
         Node node = new Node(pid, originalPage);
         cachedEntries.put(pid, node);
-        Node toRemoved=head;
+        Node toRemoved = head;
         //这里不需要超出链表尾的判断（toRemoved为null），因为到这里肯定存在该page
-        while (!(toRemoved = toRemoved.next).key.equals(pid));
-        node.front=toRemoved.front;
-        node.next=toRemoved.next;
-        toRemoved.front.next=node;
+        while (!(toRemoved = toRemoved.next).key.equals(pid)) ;
+        node.front = toRemoved.front;
+        node.next = toRemoved.next;
+        toRemoved.front.next = node;
         if (toRemoved.next != null) {
             toRemoved.next.front = node;
-        }else {
+        } else {
             //reCache的是尾节点，需要修改tail指针
             tail = node;
         }
-        toRemoved = null;
     }
 }
+

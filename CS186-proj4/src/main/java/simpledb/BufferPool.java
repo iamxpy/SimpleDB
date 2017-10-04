@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+
 /**
  * BufferPool manages the reading and writing of pages into memory from
  * disk. Access methods call into it to retrieve pages, and it fetches
@@ -14,10 +15,10 @@ import java.util.Iterator;
  * locks to read/write the page.
  */
 public class BufferPool {
-    //这个类没有设计为单例类，是因为作者认为：
+    //这个类没有直接设计为单例类，是因为作者认为：
     // The Database class provides a static method, Database.getBufferPool(),
     // that returns a reference to the single BufferPool instance for the entire SimpleDB process
-    //但是我还是觉得应该设计为单例类
+    //所以实际上相当于单例类
 
     /**
      * Bytes per page, including header.
@@ -40,6 +41,9 @@ public class BufferPool {
     //锁管理器
     private final LockManager lockManager;
 
+    //事务获取不到锁时需要等待，由于实际用的是sleep来体现等待，此处参数是sleep的时间
+    private final long SLEEP_INTERVAL;
+
     /**
      * Creates a BufferPool that caches up to numPages pages.
      *
@@ -50,6 +54,8 @@ public class BufferPool {
         PAGES_NUM = numPages;
         lruPagesPool = new PageLruCache(PAGES_NUM);
         lockManager = new LockManager();
+        //太小会造成忙碌的查询死锁，太大会浪费等待时间
+        SLEEP_INTERVAL = 500;
     }
 
     /**
@@ -68,28 +74,21 @@ public class BufferPool {
      * @param perm the requested permissions on the page
      * @see LockManager#grantSLock(TransactionId, PageId)
      * @see LockManager#grantXLock(TransactionId, PageId)
-     * @see GrantResult
      */
     public Page getPage(TransactionId tid, PageId pid, Permissions perm)
             throws TransactionAbortedException, DbException, InterruptedException {
         // some code goes here
-        synchronized (pid) {
-            GrantResult result = (perm == Permissions.READ_ONLY) ? lockManager.grantSLock(tid, pid)
+        boolean result = (perm == Permissions.READ_ONLY) ? lockManager.grantSLock(tid, pid)
+                : lockManager.grantXLock(tid, pid);
+        //下面的while循环就是在模拟等待过程，隔一段时间就检查一次是否申请到锁了，还没申请到就检查是否陷入死锁
+        while (!result) {
+            if (lockManager.deadlockOccurred(tid, pid)) {
+                throw new TransactionAbortedException();
+            }
+            Thread.sleep(SLEEP_INTERVAL);
+            //sleep之后再次判断result
+            result = (perm == Permissions.READ_ONLY) ? lockManager.grantSLock(tid, pid)
                     : lockManager.grantXLock(tid, pid);
-            while (result == GrantResult.MUST_WAIT) {//不可加锁，需要阻塞
-                if (lockManager.leadToDeadLock(tid, pid)) {
-                    throw new TransactionAbortedException();
-                }
-                lockManager.addWaitingInfo(tid, pid);
-                pid.wait();
-                //wait之后再次判断result
-                result = (perm == Permissions.READ_ONLY) ? lockManager.grantSLock(tid, pid)
-                        : lockManager.grantXLock(tid, pid);
-            }
-            if (result == GrantResult.CAN_HOLD) {
-                LockState ls = new LockState(tid, perm);
-                lockManager.lock(pid, ls);
-            }
         }
 
         HeapPage page = (HeapPage) lruPagesPool.get(pid);
@@ -120,7 +119,7 @@ public class BufferPool {
      * @param tid the ID of the transaction requesting the unlock
      * @param pid the ID of the page to unlock
      */
-    public void releasePage(TransactionId tid, PageId pid) {
+    public synchronized void releasePage(TransactionId tid, PageId pid) {
         // some code goes here
         // not necessary for proj1
         if (!lockManager.unlock(tid, pid)) {
@@ -135,7 +134,7 @@ public class BufferPool {
      *
      * @param tid the ID of the transaction requesting the unlock
      */
-    public void transactionComplete(TransactionId tid) throws IOException {
+    public synchronized void transactionComplete(TransactionId tid) throws IOException {
         // some code goes here
         // not necessary for proj1
         transactionComplete(tid, true);
@@ -157,7 +156,7 @@ public class BufferPool {
      * @param tid    the ID of the transaction requesting the unlock
      * @param commit a flag indicating whether we should commit or abort
      */
-    public void transactionComplete(TransactionId tid, boolean commit)
+    public synchronized void transactionComplete(TransactionId tid, boolean commit)
             throws IOException {
         // some code goes here
         lockManager.releaseTransactionLocks(tid);
@@ -173,7 +172,7 @@ public class BufferPool {
      *
      * @param tid
      */
-    private void revertTransactionAction(TransactionId tid) {
+    public synchronized void revertTransactionAction(TransactionId tid) {
         Iterator<Page> it = lruPagesPool.iterator();
         while (it.hasNext()) {
             Page p = it.next();
@@ -292,6 +291,9 @@ public class BufferPool {
             Page p = it.next();
             if (p.isDirty() != null && p.isDirty().equals(tid)) {
                 flushPage(p);
+                if (p.isDirty() == null) {
+                    p.setBeforeImage();
+                }
             }
         }
     }
@@ -307,6 +309,5 @@ public class BufferPool {
         // some code goes here
         // not necessary for proj1
     }
-
 
 }

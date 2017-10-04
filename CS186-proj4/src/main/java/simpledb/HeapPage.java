@@ -1,7 +1,12 @@
 package simpledb;
 
-import java.util.*;
+
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+
 
 /**
  * Each instance of HeapPage stores data for one page of HeapFiles and
@@ -257,17 +262,13 @@ public class HeapPage implements Page {
         if (!hpid.equals(pid) || !isSlotUsed(tupleNum)) {
             throw new DbException("this tuple is not on this page, or tuple slot is already empty");
         }
-        tuples[tupleNum]=null;
+        tuples[tupleNum] = null;
         markSlotUsed(tupleNum, false);
     }
 
     /**
      * Adds the specified tuple to the page;  the tuple should be updated to reflect
      * that it is now stored on this page.
-     * 找到有空闲的slot就插入吗？那就是说并不在一个page的尾部插入呀
-     * 但是这也是没办法的事，现在的设计是删除的时候只在对应的slot标志未使用，没有将该slot后面的所有tuple移到前面。
-     * 这样可以避免频繁移动数据带来的开销，但缺点是插入操作的位置变得不可预知，很可能不在表尾
-     * 以后自己可以改变这个设计，或许可以兼顾效率与正常的“插入”语义，到时只在PageFile(即表)以上的层次提供insert就好了
      *
      * @param t The tuple to add.
      * @throws DbException if the page is full (no empty slots) or tupledesc
@@ -275,16 +276,15 @@ public class HeapPage implements Page {
      */
     public void insertTuple(Tuple t) throws DbException {
         // some code goes here
-        // not necessary for lab1
         if (!td.equals(t.getTupleDesc())) throw new DbException("tupleDesc is mismatch");
         //不使用getNumTuples() == 0来判断是否没有可用的slot，因为要找到可用的slot本身就要遍历一次tuples数组
         //if(getNumTuples() == 0) throw new DbException("the page is full (no empty slots)");
-        for(int i=0;i<getNumTuples();i++) {
+        for (int i = 0; i < getNumTuples(); i++) {
             if (!isSlotUsed(i)) {
                 tuples[i] = t;
                 //修改tuple的信息，表明它现在存储在这个page上
                 t.setRecordId(new RecordId(pid, i));
-                markSlotUsed(i,true);
+                markSlotUsed(i, true);
                 return;
             }
         }
@@ -323,6 +323,25 @@ public class HeapPage implements Page {
             }
         }
         return emptySlots;
+    }
+
+    public static void main(String[] args) {
+        List<String> l = new ArrayList<>();
+        l.add("a");
+        l.add("b");
+        for (String i : l) {
+            if (i.equals("a")) {
+                l.remove(i);
+            }
+        }
+        Iterator<String> it = l.iterator();
+        while (it.hasNext()) {
+            String n = it.next();
+            if (n.equals("b")) {
+                l.remove(n);
+            }
+        }
+        System.out.println(l);
     }
 
     /**
@@ -371,6 +390,7 @@ public class HeapPage implements Page {
 
     /**
      * 修改一个byte的指定位置的bit
+     *
      * @param target    待修改的byte
      * @param posInByte bit的位置在target的偏移量，从右往左且从0开始算，取值范围为0到7
      * @param value     为true修改该bit为1,为false时修改为0

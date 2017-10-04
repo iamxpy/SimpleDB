@@ -1,6 +1,9 @@
 package simpledb;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LockManager {
 
@@ -8,105 +11,121 @@ public class LockManager {
     //故整个map为所有资源的锁信息
     private Map<PageId, List<LockState>> lockStateMap;
 
-    //Key为事务，PageId为正在等待的资源，相当于保存了等待的信息
+    //Key为事务，PageId为正在等待的资源，相当于保存了等待的信息，PS：BufferPool中实际用的是sleep体现等待
     private Map<TransactionId, PageId> waitingInfo;
 
     public LockManager() {
-        lockStateMap = new HashMap<>();
-        waitingInfo = new HashMap<>();
+        //使用支持并发的容器避免ConcurrentModificationException
+        lockStateMap = new ConcurrentHashMap<>();
+        waitingInfo = new ConcurrentHashMap<>();
     }
 
 
 //==========================申请锁,加锁,解锁的相关方法 begin==================================
 
     /**
-     * 如果tid已经在pid上有读锁，返回HAS_HELD
-     * 如果tid在pid上已经有写锁，或者没有锁但条件允许tid给pid加读锁，则返回CAN_HOLD
-     * 如果tid此时不能给pid加读锁，返回MUST_WAIT
+     * 如果tid已经在pid上有读锁，返回true
+     * 如果tid在pid上已经有写锁，或者没有锁但条件允许tid给pid加读锁，则加锁后返回true
+     * 如果tid此时不能给pid加读锁，返回false
      *
      * @param tid
      * @param pid
      * @return
      */
-    public synchronized GrantResult grantSLock(TransactionId tid, PageId pid) {
+    public synchronized boolean grantSLock(TransactionId tid, PageId pid) {
         ArrayList<LockState> list = (ArrayList<LockState>) lockStateMap.get(pid);
         if (list != null && list.size() != 0) {
             if (list.size() == 1) {//pid上只有一个锁
                 LockState ls = list.iterator().next();
                 if (ls.getTid().equals(tid)) {//判断是否为自己的锁
-                    //如果已经是读锁，返回HAS_HELD，如果是写锁，则允许继续申请读锁
-                    return ls.getPerm() == Permissions.READ_ONLY ? GrantResult.HAS_HELD : GrantResult.CAN_HOLD;
+                    //如果是读锁，直接返回（在||的之前返回），否则加锁再返回
+                    return ls.getPerm() == Permissions.READ_ONLY || lock(pid, tid, Permissions.READ_ONLY);
                 } else {
-                    //如果是别人的读锁，也可以继续申请读锁，否则需要等待
-                    return ls.getPerm() == Permissions.READ_ONLY ? GrantResult.CAN_HOLD : GrantResult.MUST_WAIT;
+                    //如果是别人的读锁，加锁再返回，是写锁则需要等待
+                    return ls.getPerm() == Permissions.READ_ONLY ? lock(pid, tid, Permissions.READ_ONLY) : wait(tid, pid);
                 }
             } else {
                 //多个锁有四种情况
-                // 1.两个锁，且都属于tid（一读一写）       2.两个锁，且都属于非tid的事务（一读一写）
+                // 1.两个锁，且都属于tid（一读一写）    2.两个锁，且都属于非tid的事务（一读一写）
                 // 3.多个读锁，且其中有一个为tid的读锁  4.多个读锁，且没有tid的读锁
                 for (LockState ls : list) {
                     if (ls.getPerm() == Permissions.READ_WRITE) {
                         //如果其中有一个写锁，那么根据是否为自己的来判断属于情况1还是2
-                        return ls.getTid().equals(tid) ? GrantResult.HAS_HELD : GrantResult.MUST_WAIT;
-                    } else if (ls.getTid().equals(tid)) {//如果是读锁且是tid的，返回HAS_HELD
-                        return GrantResult.HAS_HELD;//情况3在此返回，也可能是情况1（如果先遍历到读锁），不过都需要返回HAS_HELD
+                        return ls.getTid().equals(tid) || wait(tid, pid);
+                    } else if (ls.getTid().equals(tid)) {//如果是读锁且是tid的
+                        return true;//情况3在此返回，也可能是情况1（如果先遍历到读锁）
                     }
                 }
                 //情况4
-                return GrantResult.CAN_HOLD;
+                return lock(pid, tid, Permissions.READ_ONLY);
             }
         } else {
-            return GrantResult.CAN_HOLD;
+            return lock(pid, tid, Permissions.READ_ONLY);
         }
     }
 
     /**
-     * 如果tid已经在pid上有写锁，则返回HAS_HELD
-     * 如果仅tid拥有pid的读锁，或tid在pid上没有锁但条件允许tid给pid加写锁，则返回CAN_HOLD
-     * 如果tid此时不能给pid加写锁，返回MUST_HOLD
+     * 如果tid已经在pid上有写锁，则返回true
+     * 如果仅tid拥有pid的读锁，或tid在pid上没有锁但条件允许tid给pid加写锁，则加锁后返回true
+     * 如果tid此时不能给pid加写锁，返回false
      *
      * @param tid
      * @param pid
      * @return
      */
-    public synchronized GrantResult grantXLock(TransactionId tid, PageId pid) {
+    public synchronized boolean grantXLock(TransactionId tid, PageId pid) {
         ArrayList<LockState> list = (ArrayList<LockState>) lockStateMap.get(pid);
         if (list != null && list.size() != 0) {
             if (list.size() == 1) {//如果pid上只有一个锁
                 LockState ls = list.iterator().next();
-                if (ls.getTid().equals(tid)) {//判断是否为自己的锁
-                    //如果是自己的读锁，那么可以继续申请写锁，否则已经拥有写锁
-                    return ls.getPerm() == Permissions.READ_ONLY ? GrantResult.CAN_HOLD : GrantResult.HAS_HELD;
-                } else {//这个锁是别人的写锁或读锁，必须等待
-                    return GrantResult.MUST_WAIT;
-                }
+                //如果是自己的写锁，直接返回（在||之前返回），否则加锁再返回（在lock处返回）
+                //如果这个锁是别人的，必须等待，也就是在wait处（冒号之后）返回
+                return ls.getTid().equals(tid) ? ls.getPerm() == Permissions.READ_WRITE || lock(pid, tid, Permissions.READ_WRITE) : wait(tid, pid);
             } else {
-                //多个锁有三种情况，只有第一种情况返回HAS_HELD，其余返回MUST_WAIT
+                //多个锁有三种情况，只有第一种情况返回true，其余返回wait
                 // 1.两个锁，且都属于tid（一读一写） 2.两个锁，且都属于非tid的事务（一读一写） 3.多个读锁
                 if (list.size() == 2) {
                     for (LockState ls : list) {
                         if (ls.getTid().equals(tid) && ls.getPerm() == Permissions.READ_WRITE) {
-                            return GrantResult.HAS_HELD;//两个锁而且有一个自己的写锁
+                            return true;//两个锁而且有一个自己的写锁
                         }
                     }
                 }
-                return GrantResult.MUST_WAIT;
+                return wait(tid, pid);
             }
         } else {//pid上没有锁，可以加写锁
-            return GrantResult.CAN_HOLD;
+            return lock(pid, tid, Permissions.READ_WRITE);
         }
     }
 
 
-    public synchronized void lock(PageId pid, LockState lockState) {
-        synchronized (pid) {
-            ArrayList<LockState> list = (ArrayList<LockState>) lockStateMap.get(pid);
-            if (list == null) {
-                list = new ArrayList<>();
-            }
-            list.add(lockState);
-            lockStateMap.put(pid, list);
+    /**
+     * 加锁，表示tid在pid上有一个perm权限的锁，并返回true
+     * @param pid
+     * @param tid
+     * @param perm
+     */
+    private synchronized boolean lock(PageId pid, TransactionId tid, Permissions perm) {
+        LockState nls = new LockState(tid, perm);
+        ArrayList<LockState> list = (ArrayList<LockState>) lockStateMap.get(pid);
+        if (list == null) {
+            list = new ArrayList<>();
         }
+        list.add(nls);
+        lockStateMap.put(pid, list);
+        waitingInfo.remove(tid);
+        return true;
+    }
+
+    /**
+     * 只是处理好waitingInfo的信息然后返回false
+     * @param tid
+     * @param pid
+     * @return
+     */
+    private synchronized boolean wait(TransactionId tid, PageId pid) {
+        waitingInfo.put(tid, pid);
+        return false;
     }
 
 
@@ -120,20 +139,14 @@ public class LockManager {
      * @return
      */
     public synchronized boolean unlock(TransactionId tid, PageId pid) {
-        synchronized (pid) {
-            ArrayList<LockState> list = (ArrayList<LockState>) lockStateMap.get(pid);
+        ArrayList<LockState> list = (ArrayList<LockState>) lockStateMap.get(pid);
 
-            if (list == null || list.size() == 0) return false;
-            LockState ls = getLockState(tid, pid);
-            if (ls == null) return false;
-            list.remove(ls);
-            lockStateMap.put(pid, list);
-            //pid上的锁有变化，需要通知正在等待队列的线程
-            //让其重新争夺pid锁并判断GrantResult的取值是否还是MUST_WAIT
-            removeWaitingInfo(pid);
-            pid.notifyAll();
-            return true;
-        }
+        if (list == null || list.size() == 0) return false;
+        LockState ls = getLockState(tid, pid);
+        if (ls == null) return false;
+        list.remove(ls);
+        lockStateMap.put(pid, list);
+        return true;
     }
 
     /**
@@ -155,9 +168,9 @@ public class LockManager {
 //==========================检测死锁的相关方法 beign======================================
 
     /**
-     * 此方法在事务tid准备在pid上调用wait()前调用，用来判断假如wait()，是否会导致死锁
-     * 原理：通过检测如果tid在pid上等待，资源的依赖图是否会产生资源环来判断是否会导致死锁
-     * 具体实现：本事务tid需要检测“将要等待的资源的拥有者是否已经直接或间接的在等待本事务tid已经拥有的资源”
+     *
+     * 通过检测资源的依赖图根据是否存在环来判断是否已经陷入死锁
+     * 具体实现：本事务tid需要检测“正在等待的资源的拥有者是否已经直接或间接的在等待本事务tid已经拥有的资源”
      * <p>
      * 如图，括号内P1,P2,P3为资源,T1,T2,T3为事务
      * 虚线以及其上的字母R加上箭头组成了拥有关系，如果是字母W则代表正在等待写锁
@@ -178,17 +191,17 @@ public class LockManager {
      * 因为T1在P1上有了读锁，所以T2正在等待P1的写锁
      * 同理，T3正在等待P2的写锁
      * <p>
-     * 现在假设的情景是，此时T1要申请对P3的写锁，当然，如果wait()，将会造成死锁
-     * 而如果在wait()之前调用这个方法判断，就可以得知即将产生死锁从而避免
+     * 现在假设的情景是，此时T1要申请对P3的写锁，进入等待，这将会造成死锁
+     * 而接下来调用这个方法判断，就可以得知已经产生死锁从而回滚事务（具体在BufferPool的getPage()方法的while循环开始处）
      * <p>
-     * 会导致死锁的本质原因就是将等待的资源(P3)的拥有者(T3)间接的在等待T1拥有的资源(P1)
-     * 下面方法的注释以这个例子为基础，具体解释这个方法是如何判断出“如果T1在P3上等待则会产生死锁”的
+     * 导致死锁的本质原因就是将等待的资源(P3)的拥有者(T3)间接的在等待T1拥有的资源(P1)
+     * 下面方法的注释以这个例子为基础，具体解释这个方法是如何判断出“T1在P3上的等待已经造成了死锁”的
      *
      * @param tid
      * @param pid
-     * @return true表示会导致死锁，false表示不会
+     * @return true表示进入了死锁，false表示没有
      */
-    public synchronized boolean leadToDeadLock(TransactionId tid, PageId pid) {//T1为tid，P3为pid
+    public synchronized boolean deadlockOccurred(TransactionId tid, PageId pid) {//T1为tid，P3为pid
         List<LockState> holders = lockStateMap.get(pid);
         if (holders == null || holders.size() == 0) {
             return false;
@@ -218,7 +231,6 @@ public class LockManager {
      *                 事实上，toRemove就是leadToDeadLock()的参数tid，也就是要排除它自己对判断过程的影响
      * @return
      */
-
     private synchronized boolean isWaitingResources(TransactionId tid, List<PageId> pids, TransactionId toRemove) {
         PageId waitingPage = waitingInfo.get(tid);
         if (waitingPage == null) {
@@ -286,38 +298,6 @@ public class LockManager {
         return pids;
     }
 
-    /**
-     * 返回在pid上等待的所有tid
-     *
-     * @param pid
-     * @return
-     */
-    private synchronized List<TransactionId> getAllWaitingTid(PageId pid) {
-        ArrayList<TransactionId> waitingList = new ArrayList<>();
-        for (Map.Entry<TransactionId, PageId> entry : waitingInfo.entrySet()) {
-            if (entry.getValue().equals(pid)) {
-                waitingList.add(entry.getKey());
-            }
-        }
-        return waitingList;
-    }
-
-
-    public synchronized void addWaitingInfo(TransactionId tid, PageId pid) {
-        waitingInfo.put(tid, pid);
-    }
-
-    /**
-     * 在notify线程之前，应该先移除其正在等待的信息
-     *
-     * @param pid
-     */
-    private synchronized void removeWaitingInfo(PageId pid) {
-        List<TransactionId> removeList = getAllWaitingTid(pid);
-        for (TransactionId tid : removeList) {
-            waitingInfo.remove(tid);
-        }
-    }
 //==========================查询与修改两个map信息的相关方法 end=========================
 
 }
