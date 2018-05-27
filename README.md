@@ -2,7 +2,7 @@
 Database Homework of Berkeley University: Implement A Simple Database Management System 
 
 ## Details
-**You can get more details on https://sites.google.com/site/cs186fall2013/homeworks**
+**You can get more details in https://sites.google.com/site/cs186fall2013/homeworks**
 
 ### CS186 Project 1: SimpleDB
 In the project assignments in CS186, you will write a basic database management system called SimpleDB. For this project, you will focus on implementing the core modules required to access stored data on disk; in future projects, you will add support for various query processing operators, as well as transactions, locking, and concurrent queries.
@@ -22,6 +22,6 @@ In this project, you will implement a query optimizer on top of SimpleDB. The ma
 ### CS186 Project 4: SimpleDB Transactions
 In this project, you will implement a simple locking-based transaction system in SimpleDB. You will need to add lock and unlock calls at the appropriate places in your code, as well as code to track the locks held by each transaction and grant locks to transactions as they are needed. 
 
-## Changes in API
-+ In Pro1, I change several methods' parameters out of necessity
-+ In Pro3, I think I probably find some bugs in the code provided by the course, so I change the method computeCostAndCardOfSubplan() in JoinOptimizer.java with the purpose of getting a left-deep-tree. What's more, I change the method physicalPlan() in LogicalPlan.java. Specifically, the code I added will check if the Query contains a Join, if not, the JoinOptimizer wont be invoked.
+## API changes
++ In Pro1, I change several methods' parameters
++ In Pro3, I change the method computeCostAndCardOfSubplan() in JoinOptimizer.java in order to get a left-deep-tree(I might have found some bugs in the code provided by the course). Besides, I change the method physicalPlan() in LogicalPlan.java. Specifically, the code I added will check if the Query contains a Join, and if not, the JoinOptimizer won't be invoked.
