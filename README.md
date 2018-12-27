@@ -2,7 +2,8 @@
 Database Homework of Berkeley University: Implement A Simple Database Management System 
 
 ## Details
-**You can get more details in https://sites.google.com/site/cs186fall2013/homeworks**
+**You can get more details in https://sites.google.com/site/cs186fall2013/homeworks**  
+ **and my blog: https://blog.csdn.net/xpy870663266/article/details/78163423**
 
 ### CS186 Project 1: SimpleDB
 In the project assignments in CS186, you will write a basic database management system called SimpleDB. For this project, you will focus on implementing the core modules required to access stored data on disk; in future projects, you will add support for various query processing operators, as well as transactions, locking, and concurrent queries.
