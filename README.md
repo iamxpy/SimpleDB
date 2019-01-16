@@ -24,5 +24,5 @@ In this project, you will implement a query optimizer on top of SimpleDB. The ma
 In this project, you will implement a simple locking-based transaction system in SimpleDB. You will need to add lock and unlock calls at the appropriate places in your code, as well as code to track the locks held by each transaction and grant locks to transactions as they are needed. 
 
 ## API changes
-+ In Pro1, I change several methods' parameters
++ In Pro1, I change parameters of several methods
 + In Pro3, I change the method computeCostAndCardOfSubplan() in JoinOptimizer.java in order to get a left-deep-tree(I might have found some bugs in the code provided by the course). Besides, I change the method physicalPlan() in LogicalPlan.java. Specifically, the code I added will check if the Query contains a Join, and if not, the JoinOptimizer won't be invoked.
