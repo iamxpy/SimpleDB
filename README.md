@@ -39,7 +39,7 @@ The course consists of four projects that implement four core parts in the datab
 
 1. https://sites.google.com/site/cs186fall2013/homeworks
 
-Home page of the course, extremely helpful.
+This is the home page of the course, which is extremely helpful.
 
 2. http://coding-geek.com/how-databases-work/
 
@@ -51,7 +51,7 @@ https://dev.mysql.com/doc/refman/5.5/en/nested-loop-joins.html
 
 http://blog.csdn.net/ghsau/article/details/43762027 (Chinese version)
 
-It is recommended to read this article when implementing `join` operator in project 2.
+You can learn common join algorithms from these articles when implementing `join` operator in project 2.
 
 
 4. 
