@@ -2,7 +2,7 @@
 Database Homework of Berkeley University: Implement A Simple Database Management System 
 
 **You can get more details in https://sites.google.com/site/cs186fall2013/homeworks**  
- **and my blog(Chinese version): https://blog.csdn.net/xpy870663266/article/details/78163423 (see the English version in README)**
+ **and my blog (Chinese version): https://blog.csdn.net/xpy870663266/article/details/78163423 (see the English version in README)**
  
 
 ## API Changes
@@ -45,26 +45,35 @@ Home page of the course, extremely helpful.
 
 It is recommended to read this article before writing your code.
 
-3. http://blog.csdn.net/ghsau/article/details/43762027
+3. 
+
+https://dev.mysql.com/doc/refman/5.5/en/nested-loop-joins.html 
+
+http://blog.csdn.net/ghsau/article/details/43762027 (Chinese version)
 
 It is recommended to read this article when implementing `join` operator in project 2.
 
-4. http://blog.itpub.net/30206145/viewspace-1651583/
 
-Something about how to optimize the `Join` operator, you can learn cost-based optimization(CBO) and left-deep-tree here. You can read this in project 3.
+4. 
 
-5. http://www.mathcs.emory.edu/~cheung/Courses/554/Syllabus/5-query-opt/left-deep-trees.html
+http://www.mathcs.emory.edu/~cheung/Courses/554/Syllabus/5-query-opt/left-deep-trees.html
 
-Introduction about left-deep-tree, read this in project 3.
+http://www.mathcs.emory.edu/~cheung/Courses/554/Syllabus/5-query-opt/best-left-deep-tree.html
 
-6. http://www.mathcs.emory.edu/~cheung/Courses/554/Syllabus/5-query-opt/best-left-deep-tree.html
+http://www.mathcs.emory.edu/~cheung/Courses/554/Syllabus/5-query-opt/dyn-prog-join3.html
 
-The same as above.
+Introduction about left-deep-tree and explanation on why dynamic programming based optimizer works. Read them in project 3.
 
-7. http://www.mathcs.emory.edu/~cheung/Courses/554/Syllabus/5-query-opt/dyn-prog-join3.html
+5. 
 
+https://courses.cs.washington.edu/courses/cse444/98au/optimization.ppt
 
-Explanation on why dynamic programming based optimizer works.
+https://dl.acm.org/citation.cfm?doid=275487.275492
+
+http://blog.itpub.net/30206145/viewspace-1651583/ (Chinese version)
+
+Something about how to optimize the `Join` operator, you can learn cost-based optimization(CBO) and left-deep-tree here. Read them in project 3.
+
 
 
 What is more, when implementing the project 4, it is recommended to learn the concepts about transaction management systematically, especially ACID properties, the priority of read/write lock, 2PL protocol, etc.
