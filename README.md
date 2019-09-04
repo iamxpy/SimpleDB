@@ -45,7 +45,11 @@ This is the home page of the course, which is extremely helpful.
 
 It is recommended to read this article before writing your code.
 
-3. https://dev.mysql.com/doc/refman/5.5/en/nested-loop-joins.html 
+3. 
+
+https://dev.mysql.com/doc/refman/5.5/en/nested-loop-joins.html 
+
+https://blog.csdn.net/ghsau/article/details/43762027 (Chinese version)
 
 
 You can learn common join algorithms from this article when implementing `join` operator in project 2.
