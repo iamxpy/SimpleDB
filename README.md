@@ -29,7 +29,7 @@ The course consists of four projects that implement four core parts in the datab
 
 ### Requirement of the Course
 
-1. The projects require few knowledge of database, but in project 4, you might have to learn some concepts of transaction management through google or relevant books. Also, the references I recommend in the end of this article might help.
+1. The projects require few knowledge of database, but in project 4, you might have to learn some concepts of transaction management through google or relevant books. Also, the references I recommend at the end of this article might help.
 
 2. You need to know the basic grammar of Java, and it would be better if you have learned concurrency in Java (needed in Project 4). Additionally, I change Ant (which is recommended by the course) to Maven, so if you would like to run my code, you will also need to learn some basic concept in Maven (e.g. the use of POM file).
 
@@ -38,6 +38,7 @@ The course consists of four projects that implement four core parts in the datab
 ### Recommended websites and books
 
 1. https://sites.google.com/site/cs186fall2013/homeworks
+
 Home page of the course, extremely helpful.
 
 2. http://coding-geek.com/how-databases-work/
@@ -61,6 +62,8 @@ Introduction about left-deep-tree, read this in project 3.
 The same as above.
 
 7. http://www.mathcs.emory.edu/~cheung/Courses/554/Syllabus/5-query-opt/dyn-prog-join3.html
+
+
 Explanation on why dynamic programming based optimizer works.
 
 
