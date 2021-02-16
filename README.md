@@ -1,8 +1,7 @@
 # SimpleDB
 Database Homework of Berkeley University: Implement A Simple Database Management System，which is the same labs as MIT6.830.
 
-** You can get more details in [BerkelyCS186](https://sites.google.com/site/cs186fall2013/homeworks) , 
-[MIT6.830] (https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-830-database-systems-fall-2010/assignments/)**
+**You can get more details in [BerkelyCS186](https://sites.google.com/site/cs186fall2013/homeworks) , [MIT6.830](https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-830-database-systems-fall-2010/assignments/) .**
 
 **And here are two new LABS that are not in the first two sites, in which you can implement [Recovery and B+Tree](https://github.com/ryancooper/course-info).**
  **my blog (Chinese version): https://blog.csdn.net/xpy870663266/article/details/78163423 (see the English version in README)**
