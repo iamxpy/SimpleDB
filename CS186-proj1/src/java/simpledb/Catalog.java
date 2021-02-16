@@ -50,7 +50,6 @@ public class Catalog {
      *                  this file/tupledesc param for the calls getTupleDesc and getFile
      * @param name      the name of the table -- may be an empty string.  May not be null.  If a name
      *                  conflict exists, use the last table to be added as the table for a given name.
-     *                  todo 这句话是指当表名冲突时该怎么处理？不是很清楚表达什么
      * @param pkeyField the name of the primary key field
      */
     public void addTable(DbFile file, String name, String pkeyField) {
@@ -59,10 +58,13 @@ public class Catalog {
             throw new IllegalArgumentException();
         }
         int tableid = file.getId();
-        // TODO: 17-5-23 处理表名冲突
         if (name2id.containsKey(name)) {
-            //use the last table to be added as the table for a given name.
-            throw new UnsupportedOperationException("目前不支持添加相同名字的table");
+            //当表名冲突时，删除之前的插入的表
+            int id = name2id.get(name);
+            id2file.remove(id);
+            id2name.remove(id);
+            id2pkey.remove(id);
+            name2id.remove(name);
         }
         id2file.put(tableid, file);
         id2name.put(tableid, name);
