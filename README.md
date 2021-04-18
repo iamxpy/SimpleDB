@@ -2,6 +2,14 @@ Welcome for **issue and PR**, We will check and response it as soon as we can.
 
 The Chinese version of my summary can be seen here : [中文版 ReadMe](https://blog.csdn.net/xpy870663266/article/details/78163423)
 
+<details> <summary>展开</summary>
+    可以在Windows上完成，课程源代码可以从git clone from https://github.com/MIT-DB-Class/simple-db-hw
+</details>
+
+You can just implement this database in Windows and don't have to use Linux.
+
+The course source code can be cloned in This [website](https://github.com/MIT-DB-Class/simple-db-hw)
+
 # SimpleDB
 
 Database Homework of Berkeley University: Implement A Simple Database Management System，which is the same labs as MIT6.830.
